@@ -1,0 +1,6 @@
+@AdaptiveWebInterfaces_WebAPI_HostAddress = http://localhost:5176
+
+GET {{AdaptiveWebInterfaces_WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
