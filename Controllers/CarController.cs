@@ -1,11 +1,13 @@
 ﻿using AdaptiveWebInterfaces_WebAPI.Models;
 using AdaptiveWebInterfaces_WebAPI.Services.Car;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AdaptiveWebInterfaces_WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class CarController : ControllerBase
     {
         private readonly ICarService _carService;

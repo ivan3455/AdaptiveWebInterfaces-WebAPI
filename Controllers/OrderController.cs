@@ -1,5 +1,6 @@
 ﻿using AdaptiveWebInterfaces_WebAPI.Models;
 using AdaptiveWebInterfaces_WebAPI.Services.Order;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 
@@ -7,6 +8,7 @@ namespace AdaptiveWebInterfaces_WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
