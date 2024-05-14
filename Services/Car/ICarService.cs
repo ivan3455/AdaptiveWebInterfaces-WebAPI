@@ -4,10 +4,10 @@ namespace AdaptiveWebInterfaces_WebAPI.Services.Car
 {
     public interface ICarService
     {
-        Task<CarModel> GetCarAsync(int code);
-        Task<IEnumerable<CarModel>> GetAllCarsAsync();
-        Task<CarModel> CreateCarAsync(CarModel car);
-        Task<CarModel> UpdateCarAsync(int code, CarModel car);
-        Task<bool> DeleteCarAsync(int code);
+        Task<ResponseModel<CarModel>> GetCarAsync(int code);
+        Task<ResponseModel<IEnumerable<CarModel>>> GetAllCarsAsync();
+        Task<ResponseModel<CarModel>> CreateCarAsync(CarModel car);
+        Task<ResponseModel<CarModel>> UpdateCarAsync(int code, CarModel car);
+        Task<ResponseModel<bool>> DeleteCarAsync(int code);
     }
 }

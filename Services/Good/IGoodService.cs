@@ -4,10 +4,10 @@ namespace AdaptiveWebInterfaces_WebAPI.Services.Good
 {
     public interface IGoodService
     {
-        Task<GoodModel> GetGoodAsync(int code);
-        Task<IEnumerable<GoodModel>> GetAllGoodsAsync();
-        Task<GoodModel> CreateGoodAsync(GoodModel good);
-        Task<GoodModel> UpdateGoodAsync(int code, GoodModel good);
-        Task<bool> DeleteGoodAsync(int code);
+        Task<ResponseModel<GoodModel>> GetGoodAsync(int code);
+        Task<ResponseModel<IEnumerable<GoodModel>>> GetAllGoodsAsync();
+        Task<ResponseModel<GoodModel>> CreateGoodAsync(GoodModel good);
+        Task<ResponseModel<GoodModel>> UpdateGoodAsync(int code, GoodModel good);
+        Task<ResponseModel<bool>> DeleteGoodAsync(int code);
     }
 }

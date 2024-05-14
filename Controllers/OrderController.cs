@@ -1,12 +1,10 @@
-﻿namespace AdaptiveWebInterfaces_WebAPI.Controllers
-{
-    using AdaptiveWebInterfaces_WebAPI.Models;
-    using AdaptiveWebInterfaces_WebAPI.Services.Order;
-    using Microsoft.AspNetCore.Mvc;
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
+﻿using AdaptiveWebInterfaces_WebAPI.Models;
+using AdaptiveWebInterfaces_WebAPI.Services.Order;
+using Microsoft.AspNetCore.Mvc;
+using System;
 
+namespace AdaptiveWebInterfaces_WebAPI.Controllers
+{
     [ApiController]
     [Route("api/[controller]")]
     public class OrderController : ControllerBase
@@ -23,12 +21,12 @@
         {
             try
             {
-                var order = await _orderService.GetOrderAsync(orderId);
-                if (order == null)
+                var response = await _orderService.GetOrderAsync(orderId);
+                if (!response.Success)
                 {
-                    return NotFound();
+                    return NotFound(response.Message);
                 }
-                return Ok(order);
+                return Ok(response.Data);
             }
             catch (Exception ex)
             {
@@ -41,8 +39,8 @@
         {
             try
             {
-                var orders = await _orderService.GetAllOrdersAsync();
-                return Ok(orders);
+                var response = await _orderService.GetAllOrdersAsync();
+                return Ok(response.Data);
             }
             catch (Exception ex)
             {
@@ -55,8 +53,12 @@
         {
             try
             {
-                var createdOrder = await _orderService.CreateOrderAsync(order);
-                return CreatedAtAction(nameof(GetOrder), new { code = createdOrder.OrderId }, createdOrder);
+                var response = await _orderService.CreateOrderAsync(order);
+                if (!response.Success)
+                {
+                    return BadRequest(response.Message);
+                }
+                return CreatedAtAction(nameof(GetOrder), new { orderId = response.Data.OrderId }, response.Data);
             }
             catch (Exception ex)
             {
@@ -69,8 +71,12 @@
         {
             try
             {
-                var updatedOrder = await _orderService.UpdateOrderAsync(orderId, order);
-                return Ok(updatedOrder);
+                var response = await _orderService.UpdateOrderAsync(orderId, order);
+                if (!response.Success)
+                {
+                    return NotFound(response.Message);
+                }
+                return Ok(response.Data);
             }
             catch (Exception ex)
             {
@@ -83,10 +89,10 @@
         {
             try
             {
-                var result = await _orderService.DeleteOrderAsync(orderId);
-                if (!result)
+                var response = await _orderService.DeleteOrderAsync(orderId);
+                if (!response.Success)
                 {
-                    return NotFound();
+                    return NotFound(response.Message);
                 }
                 return NoContent();
             }
@@ -96,5 +102,4 @@
             }
         }
     }
-
 }

@@ -1,6 +1,7 @@
 ﻿using AdaptiveWebInterfaces_WebAPI.Models;
 using AdaptiveWebInterfaces_WebAPI.Services.User;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace AdaptiveWebInterfaces_WebAPI.Controllers
 {
@@ -16,16 +17,16 @@ namespace AdaptiveWebInterfaces_WebAPI.Controllers
         }
 
         [HttpGet("{userId}")]
-        public async Task<IActionResult> GetUser(int code)
+        public async Task<IActionResult> GetUser(int userId)
         {
             try
             {
-                var user = await _userService.GetUserAsync(code);
-                if (user == null)
+                var response = await _userService.GetUserAsync(userId);
+                if (!response.Success)
                 {
-                    return NotFound();
+                    return NotFound(response.Message);
                 }
-                return Ok(user);
+                return Ok(response.Data);
             }
             catch (Exception ex)
             {
@@ -38,8 +39,8 @@ namespace AdaptiveWebInterfaces_WebAPI.Controllers
         {
             try
             {
-                var users = await _userService.GetAllUsersAsync();
-                return Ok(users);
+                var response = await _userService.GetAllUsersAsync();
+                return Ok(response.Data);
             }
             catch (Exception ex)
             {
@@ -52,8 +53,12 @@ namespace AdaptiveWebInterfaces_WebAPI.Controllers
         {
             try
             {
-                var createdUser = await _userService.CreateUserAsync(user);
-                return CreatedAtAction(nameof(GetUser), new { userId = createdUser.UserId }, createdUser);
+                var response = await _userService.CreateUserAsync(user);
+                if (!response.Success)
+                {
+                    return BadRequest(response.Message);
+                }
+                return CreatedAtAction(nameof(GetUser), new { userId = response.Data.UserId }, response.Data);
             }
             catch (Exception ex)
             {
@@ -66,8 +71,12 @@ namespace AdaptiveWebInterfaces_WebAPI.Controllers
         {
             try
             {
-                var updatedUser = await _userService.UpdateUserAsync(userId, user);
-                return Ok(updatedUser);
+                var response = await _userService.UpdateUserAsync(userId, user);
+                if (!response.Success)
+                {
+                    return NotFound(response.Message);
+                }
+                return Ok(response.Data);
             }
             catch (Exception ex)
             {
@@ -80,10 +89,10 @@ namespace AdaptiveWebInterfaces_WebAPI.Controllers
         {
             try
             {
-                var result = await _userService.DeleteUserAsync(userId);
-                if (!result)
+                var response = await _userService.DeleteUserAsync(userId);
+                if (!response.Success)
                 {
-                    return NotFound();
+                    return NotFound(response.Message);
                 }
                 return NoContent();
             }

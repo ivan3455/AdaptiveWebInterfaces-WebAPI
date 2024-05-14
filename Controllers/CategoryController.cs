@@ -1,12 +1,10 @@
-﻿namespace AdaptiveWebInterfaces_WebAPI.Controllers
-{
-    using AdaptiveWebInterfaces_WebAPI.Models;
-    using AdaptiveWebInterfaces_WebAPI.Services.Category;
-    using Microsoft.AspNetCore.Mvc;
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
+﻿using AdaptiveWebInterfaces_WebAPI.Models;
+using AdaptiveWebInterfaces_WebAPI.Services.Category;
+using Microsoft.AspNetCore.Mvc;
+using System;
 
+namespace AdaptiveWebInterfaces_WebAPI.Controllers
+{
     [ApiController]
     [Route("api/[controller]")]
     public class CategoryController : ControllerBase
@@ -23,12 +21,12 @@
         {
             try
             {
-                var category = await _categoryService.GetCategoryAsync(categoryId);
-                if (category == null)
+                var response = await _categoryService.GetCategoryAsync(categoryId);
+                if (!response.Success)
                 {
-                    return NotFound();
+                    return NotFound(response.Message);
                 }
-                return Ok(category);
+                return Ok(response.Data);
             }
             catch (Exception ex)
             {
@@ -41,8 +39,8 @@
         {
             try
             {
-                var categories = await _categoryService.GetAllCategoriesAsync();
-                return Ok(categories);
+                var response = await _categoryService.GetAllCategoriesAsync();
+                return Ok(response.Data);
             }
             catch (Exception ex)
             {
@@ -55,8 +53,12 @@
         {
             try
             {
-                var createdCategory = await _categoryService.CreateCategoryAsync(category);
-                return CreatedAtAction(nameof(GetCategory), new { categoryId = createdCategory.CategoryId }, createdCategory);
+                var response = await _categoryService.CreateCategoryAsync(category);
+                if (!response.Success)
+                {
+                    return BadRequest(response.Message);
+                }
+                return CreatedAtAction(nameof(GetCategory), new { categoryId = response.Data.CategoryId }, response.Data);
             }
             catch (Exception ex)
             {
@@ -69,8 +71,12 @@
         {
             try
             {
-                var updatedCategory = await _categoryService.UpdateCategoryAsync(categoryId, category);
-                return Ok(updatedCategory);
+                var response = await _categoryService.UpdateCategoryAsync(categoryId, category);
+                if (!response.Success)
+                {
+                    return NotFound(response.Message);
+                }
+                return Ok(response.Data);
             }
             catch (Exception ex)
             {
@@ -83,10 +89,10 @@
         {
             try
             {
-                var result = await _categoryService.DeleteCategoryAsync(categoryId);
-                if (!result)
+                var response = await _categoryService.DeleteCategoryAsync(categoryId);
+                if (!response.Success)
                 {
-                    return NotFound();
+                    return NotFound(response.Message);
                 }
                 return NoContent();
             }
@@ -96,5 +102,4 @@
             }
         }
     }
-
 }

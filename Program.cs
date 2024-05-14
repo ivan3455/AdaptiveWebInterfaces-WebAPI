@@ -16,6 +16,9 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebAPI", Version = "v1" })
 );
 
+// Обрано AddSingleton оскільки AddTransient та AddScoped несумісні із List-ами, які створені в кожному сервісі для імітації БД
+// AddSingleton створює сервіс лише при першому зверненні, тим часом як AddScoped створюється один раз на кожен запит,
+// а AddTransient кожен раз коли до сервісу звертаються
 builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<IGoodService, GoodService>();
 builder.Services.AddSingleton<IManufacturerService, ManufacturerService>();

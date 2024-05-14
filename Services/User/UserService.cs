@@ -1,11 +1,7 @@
-﻿namespace AdaptiveWebInterfaces_WebAPI.Services.User
-{
-    using AdaptiveWebInterfaces_WebAPI.Models;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
+﻿using AdaptiveWebInterfaces_WebAPI.Models;
 
+namespace AdaptiveWebInterfaces_WebAPI.Services.User
+{
     public class UserService : IUserService
     {
         private readonly List<UserModel> _users;
@@ -19,33 +15,71 @@
             };
         }
 
-        public async Task<UserModel> GetUserAsync(int id)
+        public async Task<ResponseModel<UserModel>> GetUserAsync(int id)
         {
-            return await Task.FromResult(_users.FirstOrDefault(u => u.UserId == id));
+            var user = _users.FirstOrDefault(u => u.UserId == id);
+            if (user != null)
+            {
+                return new ResponseModel<UserModel>
+                {
+                    Data = user,
+                    Success = true,
+                    Message = "User found."
+                };
+            }
+            else
+            {
+                return new ResponseModel<UserModel>
+                {
+                    Data = null,
+                    Success = false,
+                    Message = "User not found."
+                };
+            }
         }
 
-        public async Task<IEnumerable<UserModel>> GetAllUsersAsync()
+        public async Task<ResponseModel<IEnumerable<UserModel>>> GetAllUsersAsync()
         {
-            return await Task.FromResult(_users);
+            return new ResponseModel<IEnumerable<UserModel>>
+            {
+                Data = _users,
+                Success = true,
+                Message = "All users retrieved."
+            };
         }
 
-        public async Task<UserModel> CreateUserAsync(UserModel user)
+        public async Task<ResponseModel<UserModel>> CreateUserAsync(UserModel user)
         {
             if (_users.Any(u => u.UserId == user.UserId))
             {
-                throw new Exception("User with the same code already exists.");
+                return new ResponseModel<UserModel>
+                {
+                    Data = null,
+                    Success = false,
+                    Message = "User with the same code already exists."
+                };
             }
 
             _users.Add(user);
-            return await Task.FromResult(user);
+            return new ResponseModel<UserModel>
+            {
+                Data = user,
+                Success = true,
+                Message = "User added successfully."
+            };
         }
 
-        public async Task<UserModel> UpdateUserAsync(int code, UserModel user)
+        public async Task<ResponseModel<UserModel>> UpdateUserAsync(int id, UserModel user)
         {
-            var existingUser = _users.FirstOrDefault(u => u.UserId == code);
+            var existingUser = _users.FirstOrDefault(u => u.UserId == id);
             if (existingUser == null)
             {
-                throw new Exception("User not found.");
+                return new ResponseModel<UserModel>
+                {
+                    Data = null,
+                    Success = false,
+                    Message = "User not found."
+                };
             }
 
             existingUser.LastName = user.LastName;
@@ -55,19 +89,34 @@
             existingUser.PhoneNumber = user.PhoneNumber;
             existingUser.Email = user.Email;
 
-            return await Task.FromResult(existingUser);
+            return new ResponseModel<UserModel>
+            {
+                Data = existingUser,
+                Success = true,
+                Message = "User updated successfully."
+            };
         }
 
-        public async Task<bool> DeleteUserAsync(int code)
+        public async Task<ResponseModel<bool>> DeleteUserAsync(int id)
         {
-            var existingUser = _users.FirstOrDefault(u => u.UserId == code);
+            var existingUser = _users.FirstOrDefault(u => u.UserId == id);
             if (existingUser == null)
             {
-                throw new Exception("User not found.");
+                return new ResponseModel<bool>
+                {
+                    Data = false,
+                    Success = false,
+                    Message = "User not found."
+                };
             }
 
             _users.Remove(existingUser);
-            return await Task.FromResult(true);
+            return new ResponseModel<bool>
+            {
+                Data = true,
+                Success = true,
+                Message = "User deleted successfully."
+            };
         }
     }
 }

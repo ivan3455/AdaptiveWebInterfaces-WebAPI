@@ -1,12 +1,10 @@
-﻿namespace AdaptiveWebInterfaces_WebAPI.Controllers
-{
-    using AdaptiveWebInterfaces_WebAPI.Models;
-    using AdaptiveWebInterfaces_WebAPI.Services.Manufacturer;
-    using Microsoft.AspNetCore.Mvc;
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
+﻿using AdaptiveWebInterfaces_WebAPI.Models;
+using AdaptiveWebInterfaces_WebAPI.Services.Manufacturer;
+using Microsoft.AspNetCore.Mvc;
+using System;
 
+namespace AdaptiveWebInterfaces_WebAPI.Controllers
+{
     [ApiController]
     [Route("api/[controller]")]
     public class ManufacturerController : ControllerBase
@@ -23,12 +21,12 @@
         {
             try
             {
-                var manufacturer = await _manufacturerService.GetManufacturerAsync(manufacturerId);
-                if (manufacturer == null)
+                var response = await _manufacturerService.GetManufacturerAsync(manufacturerId);
+                if (!response.Success)
                 {
-                    return NotFound();
+                    return NotFound(response.Message);
                 }
-                return Ok(manufacturer);
+                return Ok(response.Data);
             }
             catch (Exception ex)
             {
@@ -41,8 +39,8 @@
         {
             try
             {
-                var manufacturers = await _manufacturerService.GetAllManufacturersAsync();
-                return Ok(manufacturers);
+                var response = await _manufacturerService.GetAllManufacturersAsync();
+                return Ok(response.Data);
             }
             catch (Exception ex)
             {
@@ -55,8 +53,12 @@
         {
             try
             {
-                var createdManufacturer = await _manufacturerService.CreateManufacturerAsync(manufacturer);
-                return CreatedAtAction(nameof(GetManufacturer), new { code = createdManufacturer.ManufacturerId }, createdManufacturer);
+                var response = await _manufacturerService.CreateManufacturerAsync(manufacturer);
+                if (!response.Success)
+                {
+                    return BadRequest(response.Message);
+                }
+                return CreatedAtAction(nameof(GetManufacturer), new { manufacturerId = response.Data.ManufacturerId }, response.Data);
             }
             catch (Exception ex)
             {
@@ -69,8 +71,12 @@
         {
             try
             {
-                var updatedManufacturer = await _manufacturerService.UpdateManufacturerAsync(manufacturerId, manufacturer);
-                return Ok(updatedManufacturer);
+                var response = await _manufacturerService.UpdateManufacturerAsync(manufacturerId, manufacturer);
+                if (!response.Success)
+                {
+                    return NotFound(response.Message);
+                }
+                return Ok(response.Data);
             }
             catch (Exception ex)
             {
@@ -83,10 +89,10 @@
         {
             try
             {
-                var result = await _manufacturerService.DeleteManufacturerAsync(manufacturerId);
-                if (!result)
+                var response = await _manufacturerService.DeleteManufacturerAsync(manufacturerId);
+                if (!response.Success)
                 {
-                    return NotFound();
+                    return NotFound(response.Message);
                 }
                 return NoContent();
             }
