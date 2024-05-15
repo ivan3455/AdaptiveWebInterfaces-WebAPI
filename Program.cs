@@ -1,6 +1,7 @@
 using AdaptiveWebInterfaces_WebAPI.Services.Auth;
 using AdaptiveWebInterfaces_WebAPI.Services.Car;
 using AdaptiveWebInterfaces_WebAPI.Services.Category;
+using AdaptiveWebInterfaces_WebAPI.Services.Excel;
 using AdaptiveWebInterfaces_WebAPI.Services.Good;
 using AdaptiveWebInterfaces_WebAPI.Services.Jwt;
 using AdaptiveWebInterfaces_WebAPI.Services.Manufacturer;
@@ -23,7 +24,7 @@ builder.Services.AddSingleton<IOrderService, OrderService>();
 builder.Services.AddSingleton<IOrderDetailService, OrderDetailService>();
 builder.Services.AddSingleton<IAuthService, AuthService>();
 builder.Services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
-
+builder.Services.AddTransient<IExcelService, ExcelService>();
 builder.Services.AddSingleton<IJwtService, JwtService>();
 
 builder.Services.AddAuthentication(options =>

@@ -22,12 +22,12 @@ namespace AdaptiveWebInterfaces_WebAPI.Controllers
         {
             try
             {
-                var response = await _carService.GetCarAsync(carId);
-                if (!response.Success)
+                var car = await _carService.GetCarAsync(carId);
+                if (car == null)
                 {
-                    return NotFound(response.Message);
+                    return NotFound();
                 }
-                return Ok(response.Data);
+                return Ok(car);
             }
             catch (Exception ex)
             {
