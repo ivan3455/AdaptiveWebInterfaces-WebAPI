@@ -4,6 +4,7 @@ namespace AdaptiveWebInterfaces_WebAPI.Models.User
 {
     public class UserModel
     {
+        [Key]
         public int UserId { get; set; }
 
         [Required(ErrorMessage = "The lastname is required")] // атрибут забезпечення валідації даних

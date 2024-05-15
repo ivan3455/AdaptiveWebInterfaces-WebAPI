@@ -1,27 +1,24 @@
-﻿using AdaptiveWebInterfaces_WebAPI.Data.User;
+﻿using Microsoft.EntityFrameworkCore;
 using AdaptiveWebInterfaces_WebAPI.Models.User;
 using AdaptiveWebInterfaces_WebAPI.Services.PasswordHasher;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using AdaptiveWebInterfaces_WebAPI.Data.Database;
 
 namespace AdaptiveWebInterfaces_WebAPI.Services.Auth
 {
     public class AuthService : IAuthService
     {
-        private readonly List<UserModel> _users;
+        private readonly ApplicationDbContext _context;
         private readonly IPasswordHasher _passwordHasher;
 
-        public AuthService(IPasswordHasher passwordHasher)
+        public AuthService(ApplicationDbContext context, IPasswordHasher passwordHasher)
         {
-            _users = TestUserData.Users;
+            _context = context;
             _passwordHasher = passwordHasher;
         }
 
         public async Task<UserModel> AuthenticateUserAsync(string email, string password)
         {
-            var user = _users.SingleOrDefault(u => u.Email == email);
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == email);
 
             if (user == null || user.IsBlocked)
             {
@@ -40,19 +37,21 @@ namespace AdaptiveWebInterfaces_WebAPI.Services.Auth
 
             user.FailedLoginAttempts = 0;
             user.LastLoginDate = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
             return user;
         }
 
         public async Task<UserModel> RegisterUserAsync(RegisterModel newUser)
         {
-            if (_users.Any(u => u.Email == newUser.Email))
+            if (await _context.Users.AnyAsync(u => u.Email == newUser.Email))
             {
                 throw new InvalidOperationException("A user with this email address already exists.");
             }
 
             var user = new UserModel
             {
-                UserId = GenerateUserId(),
                 LastName = newUser.LastName,
                 FirstName = newUser.FirstName,
                 Email = newUser.Email,
@@ -65,13 +64,15 @@ namespace AdaptiveWebInterfaces_WebAPI.Services.Auth
                 IsBlocked = false
             };
 
-            _users.Add(user);
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
             return user;
         }
 
         public async Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword)
         {
-            var user = _users.FirstOrDefault(u => u.UserId == userId);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
             if (user == null)
             {
                 throw new ArgumentException("User not found.", nameof(userId));
@@ -83,20 +84,9 @@ namespace AdaptiveWebInterfaces_WebAPI.Services.Auth
             }
 
             user.Password = _passwordHasher.HashPassword(newPassword);
-            return true;
-        }
+            await _context.SaveChangesAsync();
 
-        private int GenerateUserId()
-        {
-            if (_users.Count == 0)
-            {
-                return 1;
-            }
-            else
-            {
-                int maxUserId = _users.Max(u => u.UserId);
-                return maxUserId + 1;
-            }
+            return true;
         }
     }
 }
