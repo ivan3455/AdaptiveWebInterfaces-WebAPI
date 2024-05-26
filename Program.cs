@@ -1,7 +1,9 @@
 using AdaptiveWebInterfaces_WebAPI.Data.Database;
+using AdaptiveWebInterfaces_WebAPI.Hubs;
 using AdaptiveWebInterfaces_WebAPI.Services.Auth;
 using AdaptiveWebInterfaces_WebAPI.Services.Car;
 using AdaptiveWebInterfaces_WebAPI.Services.Category;
+using AdaptiveWebInterfaces_WebAPI.Services.Currency;
 using AdaptiveWebInterfaces_WebAPI.Services.Excel;
 using AdaptiveWebInterfaces_WebAPI.Services.Good;
 using AdaptiveWebInterfaces_WebAPI.Services.Health_Check;
@@ -11,7 +13,6 @@ using AdaptiveWebInterfaces_WebAPI.Services.Manufacturer;
 using AdaptiveWebInterfaces_WebAPI.Services.Order;
 using AdaptiveWebInterfaces_WebAPI.Services.OrderDetail;
 using AdaptiveWebInterfaces_WebAPI.Services.PasswordHasher;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,18 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+}
+
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrEmpty(jwtKey))
+{
+    throw new InvalidOperationException("JWT key not found in configuration.");
+}
 
 builder.Services.AddSingleton<IGoodService, GoodService>();
 builder.Services.AddSingleton<IManufacturerService, ManufacturerService>();
@@ -32,12 +45,16 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
 builder.Services.AddTransient<IExcelService, ExcelService>();
 builder.Services.AddSingleton<IJwtService, JwtService>();
+
+builder.Services.AddSingleton<ICurrencyService, CurrencyService>();
+builder.Services.AddSignalR();
+
 builder.Services.AddSingleton<ServiceHealthCheck>();
 builder.Services.AddSingleton<ResourceUsageHealthCheck>();
 builder.Services.AddSingleton<ICustomHealthCheckResultWriter, CustomHealthCheckResultWriter>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySQL(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseMySQL(connectionString));
 
 builder.Services.AddAuthentication(options =>
 {
@@ -50,7 +67,7 @@ builder.Services.AddAuthentication(options =>
     {
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = false,
@@ -138,9 +155,13 @@ catch (Exception ex)
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseDefaultFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+app.MapHub<CurrencyHub>("/currencyHub");
 
 var customHealthCheckResultWriter = app.Services.GetRequiredService<ICustomHealthCheckResultWriter>();
 
