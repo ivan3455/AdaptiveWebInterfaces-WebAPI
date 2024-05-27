@@ -1,11 +1,14 @@
 ﻿using AdaptiveWebInterfaces_WebAPI.Models;
 using AdaptiveWebInterfaces_WebAPI.Services.OrderDetail;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace AdaptiveWebInterfaces_WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class OrderDetailController : ControllerBase
     {
         private readonly IOrderDetailService _orderDetailService;
@@ -20,12 +23,12 @@ namespace AdaptiveWebInterfaces_WebAPI.Controllers
         {
             try
             {
-                var orderDetail = await _orderDetailService.GetOrderDetailAsync(orderId, goodId);
-                if (orderDetail == null)
+                var response = await _orderDetailService.GetOrderDetailAsync(orderId, goodId);
+                if (!response.Success)
                 {
-                    return NotFound();
+                    return NotFound(response.Message);
                 }
-                return Ok(orderDetail);
+                return Ok(response.Data);
             }
             catch (Exception ex)
             {
@@ -38,8 +41,8 @@ namespace AdaptiveWebInterfaces_WebAPI.Controllers
         {
             try
             {
-                var orderDetails = await _orderDetailService.GetAllOrderDetailsAsync();
-                return Ok(orderDetails);
+                var response = await _orderDetailService.GetAllOrderDetailsAsync();
+                return Ok(response.Data);
             }
             catch (Exception ex)
             {
@@ -52,8 +55,12 @@ namespace AdaptiveWebInterfaces_WebAPI.Controllers
         {
             try
             {
-                var createdOrderDetail = await _orderDetailService.CreateOrderDetailAsync(orderDetail);
-                return CreatedAtAction(nameof(GetOrderDetail), new { orderCode = createdOrderDetail.OrderId, goodCode = createdOrderDetail.GoodId }, createdOrderDetail);
+                var response = await _orderDetailService.CreateOrderDetailAsync(orderDetail);
+                if (!response.Success)
+                {
+                    return BadRequest(response.Message);
+                }
+                return CreatedAtAction(nameof(GetOrderDetail), new { orderId = response.Data.OrderId, goodId = response.Data.GoodId }, response.Data);
             }
             catch (Exception ex)
             {
@@ -66,8 +73,12 @@ namespace AdaptiveWebInterfaces_WebAPI.Controllers
         {
             try
             {
-                var updatedOrderDetail = await _orderDetailService.UpdateOrderDetailAsync(orderId, goodId, orderDetail);
-                return Ok(updatedOrderDetail);
+                var response = await _orderDetailService.UpdateOrderDetailAsync(orderId, goodId, orderDetail);
+                if (!response.Success)
+                {
+                    return NotFound(response.Message);
+                }
+                return Ok(response.Data);
             }
             catch (Exception ex)
             {
@@ -80,10 +91,10 @@ namespace AdaptiveWebInterfaces_WebAPI.Controllers
         {
             try
             {
-                var result = await _orderDetailService.DeleteOrderDetailAsync(orderId, goodId);
-                if (!result)
+                var response = await _orderDetailService.DeleteOrderDetailAsync(orderId, goodId);
+                if (!response.Success)
                 {
-                    return NotFound();
+                    return NotFound(response.Message);
                 }
                 return NoContent();
             }

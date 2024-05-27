@@ -4,10 +4,10 @@ namespace AdaptiveWebInterfaces_WebAPI.Services.Category
 {
     public interface ICategoryService
     {
-        Task<CategoryModel> GetCategoryAsync(int code);
-        Task<IEnumerable<CategoryModel>> GetAllCategoriesAsync();
-        Task<CategoryModel> CreateCategoryAsync(CategoryModel category);
-        Task<CategoryModel> UpdateCategoryAsync(int code, CategoryModel category);
-        Task<bool> DeleteCategoryAsync(int code);
+        Task<ResponseModel<CategoryModel>> GetCategoryAsync(int code);
+        Task<ResponseModel<IEnumerable<CategoryModel>>> GetAllCategoriesAsync();
+        Task<ResponseModel<CategoryModel>> CreateCategoryAsync(CategoryModel category);
+        Task<ResponseModel<CategoryModel>> UpdateCategoryAsync(int code, CategoryModel category);
+        Task<ResponseModel<bool>> DeleteCategoryAsync(int code);
     }
 }

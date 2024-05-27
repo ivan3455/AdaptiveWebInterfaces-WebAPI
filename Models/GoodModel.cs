@@ -1,7 +1,10 @@
-﻿namespace AdaptiveWebInterfaces_WebAPI.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace AdaptiveWebInterfaces_WebAPI.Models
 {
     public class GoodModel
     {
+        [Key]
         public int GoodId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }

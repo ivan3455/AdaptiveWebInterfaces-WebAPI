@@ -1,14 +1,14 @@
-﻿namespace AdaptiveWebInterfaces_WebAPI.Controllers
-{
-    using AdaptiveWebInterfaces_WebAPI.Models;
-    using AdaptiveWebInterfaces_WebAPI.Services.Good;
-    using Microsoft.AspNetCore.Mvc;
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
+﻿using AdaptiveWebInterfaces_WebAPI.Models;
+using AdaptiveWebInterfaces_WebAPI.Services.Good;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System;
 
+namespace AdaptiveWebInterfaces_WebAPI.Controllers
+{
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class GoodController : ControllerBase
     {
         private readonly IGoodService _goodService;
@@ -23,12 +23,12 @@
         {
             try
             {
-                var good = await _goodService.GetGoodAsync(goodId);
-                if (good == null)
+                var response = await _goodService.GetGoodAsync(goodId);
+                if (!response.Success)
                 {
-                    return NotFound();
+                    return NotFound(response.Message);
                 }
-                return Ok(good);
+                return Ok(response.Data);
             }
             catch (Exception ex)
             {
@@ -41,8 +41,8 @@
         {
             try
             {
-                var goods = await _goodService.GetAllGoodsAsync();
-                return Ok(goods);
+                var response = await _goodService.GetAllGoodsAsync();
+                return Ok(response.Data);
             }
             catch (Exception ex)
             {
@@ -55,8 +55,12 @@
         {
             try
             {
-                var createdGood = await _goodService.CreateGoodAsync(good);
-                return CreatedAtAction(nameof(GetGood), new { code = createdGood.GoodId }, createdGood);
+                var response = await _goodService.CreateGoodAsync(good);
+                if (!response.Success)
+                {
+                    return BadRequest(response.Message);
+                }
+                return CreatedAtAction(nameof(GetGood), new { goodId = response.Data.GoodId }, response.Data);
             }
             catch (Exception ex)
             {
@@ -69,8 +73,12 @@
         {
             try
             {
-                var updatedGood = await _goodService.UpdateGoodAsync(goodId, good);
-                return Ok(updatedGood);
+                var response = await _goodService.UpdateGoodAsync(goodId, good);
+                if (!response.Success)
+                {
+                    return NotFound(response.Message);
+                }
+                return Ok(response.Data);
             }
             catch (Exception ex)
             {
@@ -83,10 +91,10 @@
         {
             try
             {
-                var result = await _goodService.DeleteGoodAsync(goodId);
-                if (!result)
+                var response = await _goodService.DeleteGoodAsync(goodId);
+                if (!response.Success)
                 {
-                    return NotFound();
+                    return NotFound(response.Message);
                 }
                 return NoContent();
             }

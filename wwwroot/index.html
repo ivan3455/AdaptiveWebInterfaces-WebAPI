@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currency Rates</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/3.1.12/signalr.min.js"></script>
+</head>
+<body>
+    <h1>Currency Rates</h1>
+    <label for="baseCurrency">Base Currency: </label>
+    <select id="baseCurrency">
+        <option value="USD">USD</option>
+        <option value="EUR">EUR</option>
+        <option value="GBP">GBP</option>
+        <option value="GBP">UAH</option>
+    </select>
+    <div id="rates"></div>
+
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/currencyHub")
+            .build();
+
+        connection.on("ReceiveRates", function (rates) {
+            const ratesDiv = document.getElementById("rates");
+            ratesDiv.innerHTML = '';
+            for (const [currency, rate] of Object.entries(rates)) {
+                const rateElement = document.createElement("div");
+                rateElement.textContent = `${currency}: ${rate}`;
+                ratesDiv.appendChild(rateElement);
+            }
+        });
+
+        connection.start().then(function () {
+            console.log("Connected to SignalR Hub");
+
+            document.getElementById("baseCurrency").addEventListener("change", function () {
+                const baseCurrency = this.value;
+                connection.invoke("SetBaseCurrency", baseCurrency).catch(function (err) {
+                    return console.error(err.toString());
+                });
+            });
+
+            connection.invoke("SendRates").catch(function (err) {
+                return console.error(err.toString());
+            });
+
+            setInterval(function () {
+                connection.invoke("SendRates").catch(function (err) {
+                    return console.error(err.toString());
+                });
+            }, 1000);
+        }).catch(function (err) {
+            return console.error(err.toString());
+        });
+    </script>
+</body>
+</html>

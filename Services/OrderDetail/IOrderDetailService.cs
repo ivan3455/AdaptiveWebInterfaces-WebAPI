@@ -4,10 +4,10 @@ namespace AdaptiveWebInterfaces_WebAPI.Services.OrderDetail
 {
     public interface IOrderDetailService
     {
-        Task<OrderDetailModel> GetOrderDetailAsync(int orderCode, int goodCode);
-        Task<IEnumerable<OrderDetailModel>> GetAllOrderDetailsAsync();
-        Task<OrderDetailModel> CreateOrderDetailAsync(OrderDetailModel orderDetail);
-        Task<OrderDetailModel> UpdateOrderDetailAsync(int orderCode, int goodCode, OrderDetailModel orderDetail);
-        Task<bool> DeleteOrderDetailAsync(int orderCode, int goodCode);
+        Task<ResponseModel<OrderDetailModel>> GetOrderDetailAsync(int orderCode, int goodCode);
+        Task<ResponseModel<IEnumerable<OrderDetailModel>>> GetAllOrderDetailsAsync();
+        Task<ResponseModel<OrderDetailModel>> CreateOrderDetailAsync(OrderDetailModel orderDetail);
+        Task<ResponseModel<OrderDetailModel>> UpdateOrderDetailAsync(int orderCode, int goodCode, OrderDetailModel orderDetail);
+        Task<ResponseModel<bool>> DeleteOrderDetailAsync(int orderCode, int goodCode);
     }
 }

@@ -1,11 +1,13 @@
 ﻿using AdaptiveWebInterfaces_WebAPI.Models;
 using AdaptiveWebInterfaces_WebAPI.Services.Car;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AdaptiveWebInterfaces_WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class CarController : ControllerBase
     {
         private readonly ICarService _carService;
@@ -38,8 +40,8 @@ namespace AdaptiveWebInterfaces_WebAPI.Controllers
         {
             try
             {
-                var cars = await _carService.GetAllCarsAsync();
-                return Ok(cars);
+                var response = await _carService.GetAllCarsAsync();
+                return Ok(response.Data);
             }
             catch (Exception ex)
             {
@@ -52,8 +54,12 @@ namespace AdaptiveWebInterfaces_WebAPI.Controllers
         {
             try
             {
-                var createdCar = await _carService.CreateCarAsync(car);
-                return CreatedAtAction(nameof(GetCar), new { carId = createdCar.CarId }, createdCar);
+                var response = await _carService.CreateCarAsync(car);
+                if (!response.Success)
+                {
+                    return BadRequest(response.Message);
+                }
+                return CreatedAtAction(nameof(GetCar), new { carId = response.Data.CarId }, response.Data);
             }
             catch (Exception ex)
             {
@@ -66,8 +72,12 @@ namespace AdaptiveWebInterfaces_WebAPI.Controllers
         {
             try
             {
-                var updatedCar = await _carService.UpdateCarAsync(carId, car);
-                return Ok(updatedCar);
+                var response = await _carService.UpdateCarAsync(carId, car);
+                if (!response.Success)
+                {
+                    return NotFound(response.Message);
+                }
+                return Ok(response.Data);
             }
             catch (Exception ex)
             {
@@ -80,10 +90,10 @@ namespace AdaptiveWebInterfaces_WebAPI.Controllers
         {
             try
             {
-                var result = await _carService.DeleteCarAsync(carId);
-                if (!result)
+                var response = await _carService.DeleteCarAsync(carId);
+                if (!response.Success)
                 {
-                    return NotFound();
+                    return NotFound(response.Message);
                 }
                 return NoContent();
             }

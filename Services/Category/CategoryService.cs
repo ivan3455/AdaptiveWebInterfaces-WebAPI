@@ -9,57 +9,119 @@ namespace AdaptiveWebInterfaces_WebAPI.Services.Category
         public CategoryService()
         {
             _categories = new List<CategoryModel>
-        {
-            new CategoryModel { CategoryId = 1, Name = "Brakes" },
-            new CategoryModel { CategoryId = 2, Name = "Filters" }
-        };
+            {
+                new CategoryModel { CategoryId = 1, Name = "Brakes" },
+                new CategoryModel { CategoryId = 2, Name = "Filters" },
+                new CategoryModel { CategoryId = 3, Name = "Suspension" },
+                new CategoryModel { CategoryId = 4, Name = "Engine Parts" },
+                new CategoryModel { CategoryId = 5, Name = "Electrical Components" },
+                new CategoryModel { CategoryId = 6, Name = "Transmission" },
+                new CategoryModel { CategoryId = 7, Name = "Exhaust System" },
+                new CategoryModel { CategoryId = 8, Name = "Cooling System" },
+                new CategoryModel { CategoryId = 9, Name = "Interior Accessories" },
+                new CategoryModel { CategoryId = 10, Name = "Exterior Accessories" },
+                new CategoryModel { CategoryId = 11, Name = "Wheels & Tires" },
+                new CategoryModel { CategoryId = 12, Name = "Body Parts" }
+            };
         }
 
-        public async Task<CategoryModel> GetCategoryAsync(int categoryId)
+        public async Task<ResponseModel<CategoryModel>> GetCategoryAsync(int categoryId)
         {
-            return await Task.FromResult(_categories.FirstOrDefault(c => c.CategoryId == categoryId));
+            var category = _categories.FirstOrDefault(c => c.CategoryId == categoryId);
+            if (category != null)
+            {
+                return new ResponseModel<CategoryModel>
+                {
+                    Data = category,
+                    Success = true,
+                    Message = "Category found."
+                };
+            }
+            else
+            {
+                return new ResponseModel<CategoryModel>
+                {
+                    Data = null,
+                    Success = false,
+                    Message = "Category not found."
+                };
+            }
         }
 
-        public async Task<IEnumerable<CategoryModel>> GetAllCategoriesAsync()
+        public async Task<ResponseModel<IEnumerable<CategoryModel>>> GetAllCategoriesAsync()
         {
-            return await Task.FromResult(_categories);
+            return new ResponseModel<IEnumerable<CategoryModel>>
+            {
+                Data = _categories,
+                Success = true,
+                Message = "All categories retrieved."
+            };
         }
 
-        public async Task<CategoryModel> CreateCategoryAsync(CategoryModel category)
+        public async Task<ResponseModel<CategoryModel>> CreateCategoryAsync(CategoryModel category)
         {
             if (_categories.Any(c => c.CategoryId == category.CategoryId))
             {
-                throw new Exception("Category with the same code already exists.");
+                return new ResponseModel<CategoryModel>
+                {
+                    Data = null,
+                    Success = false,
+                    Message = "Category with the same code already exists."
+                };
             }
 
             _categories.Add(category);
-            return await Task.FromResult(category);
+            return new ResponseModel<CategoryModel>
+            {
+                Data = category,
+                Success = true,
+                Message = "Category added successfully."
+            };
         }
 
-        public async Task<CategoryModel> UpdateCategoryAsync(int categoryId, CategoryModel category)
+        public async Task<ResponseModel<CategoryModel>> UpdateCategoryAsync(int categoryId, CategoryModel category)
         {
             var existingCategory = _categories.FirstOrDefault(c => c.CategoryId == categoryId);
             if (existingCategory == null)
             {
-                throw new Exception("Category not found.");
+                return new ResponseModel<CategoryModel>
+                {
+                    Data = null,
+                    Success = false,
+                    Message = "Category not found."
+                };
             }
 
             existingCategory.Name = category.Name;
 
-            return await Task.FromResult(existingCategory);
+            return new ResponseModel<CategoryModel>
+            {
+                Data = existingCategory,
+                Success = true,
+                Message = "Category updated successfully."
+            };
         }
 
-        public async Task<bool> DeleteCategoryAsync(int categoryId)
+        public async Task<ResponseModel<bool>> DeleteCategoryAsync(int categoryId)
         {
             var existingCategory = _categories.FirstOrDefault(c => c.CategoryId == categoryId);
             if (existingCategory == null)
             {
-                throw new Exception("Category not found.");
+                return new ResponseModel<bool>
+                {
+                    Data = false,
+                    Success = false,
+                    Message = "Category not found."
+                };
             }
 
             _categories.Remove(existingCategory);
-            return await Task.FromResult(true);
+            return new ResponseModel<bool>
+            {
+                Data = true,
+                Success = true,
+                Message = "Category deleted successfully."
+            };
         }
     }
-
 }
