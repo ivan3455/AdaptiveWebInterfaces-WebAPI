@@ -14,10 +14,17 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Quartz;
 using Serilog;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using System.Text;
+using OpenTelemetry;
+using OpenTelemetry.Instrumentation.AspNetCore;
+using OpenTelemetry.Instrumentation.Http;
+using OpenTelemetry.Instrumentation.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -129,6 +136,28 @@ builder.Services.AddHostedService<WeatherBackgroundService>();
 builder.Services.AddHostedService<NotificationBackgroundService>();
 
 builder.Services.AddMemoryCache();
+
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("MyAspNetCoreService"))
+    .WithTracing(tracing => tracing
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddSqlClientInstrumentation()
+        .AddSource("AdaptiveWebInterfaces_WebAPI")
+        .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("MyAspNetCoreService"))
+        .SetSampler(new TraceIdRatioBasedSampler(0.1)) // 10% слідів
+        .AddProcessor(new SimpleActivityExportProcessor(new CustomTraceExporter())) // Додаємо власний експортер
+        .AddOtlpExporter(options =>
+        {
+            options.Endpoint = new Uri("http://localhost:4317");
+        }))
+    .WithMetrics(metrics => metrics
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddOtlpExporter(options =>
+        {
+            options.Endpoint = new Uri("http://localhost:4317");
+        }));
 
 var app = builder.Build();
 

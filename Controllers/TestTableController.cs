@@ -1,5 +1,6 @@
 ﻿using AdaptiveWebInterfaces_WebAPI.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace AdaptiveWebInterfaces_WebAPI.Controllers
@@ -20,8 +21,16 @@ namespace AdaptiveWebInterfaces_WebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> AddTestTableEntry(int id)
         {
-            await _testTableService.AddTestTableEntryAsync(id);
-            await _emailService.SendEmailNotificationAsync(id); // Надсилаємо емейл після успішного додавання
+            using (var activity = Telemetry.ActivitySource.StartActivity("AddTestTableEntry"))
+            {
+                activity?.SetTag("parameter.id", id);
+                activity?.SetTag("user.id", User?.Identity?.Name ?? "anonymous");
+
+                await _testTableService.AddTestTableEntryAsync(id);
+                await _emailService.SendEmailNotificationAsync(id);
+
+                activity?.SetTag("result.status", "success");
+            }
             return Ok();
         }
     }
