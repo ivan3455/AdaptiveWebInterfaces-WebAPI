@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  adaptivewebinterfaces-webapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: adaptivewebinterfaces-webapi
+    restart: always
+    ports:
+      - "32769:80"
+    depends_on:
+      - db
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      SA_PASSWORD: "Strinffd7122!vkvd"
+      ACCEPT_EULA: "Y"
+    restart: always
+    ports:
+      - "1433:1433"

@@ -33,6 +33,11 @@ if (string.IsNullOrEmpty(jwtKey))
     throw new InvalidOperationException("JWT key not found in configuration.");
 }
 
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(80);
+});
+
 builder.Services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
 builder.Services.AddSingleton<IJwtService, JwtService>();
 
@@ -46,7 +51,6 @@ builder.Services.AddSingleton<ICustomHealthCheckResultWriter, CustomHealthCheckR
 builder.Services.AddDbContext<EmailListenerDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Configure Serilog
 Log.Logger = new LoggerConfiguration()
     .WriteTo.File("Logs/log.txt", rollingInterval: RollingInterval.Day)
     .CreateLogger();
@@ -114,11 +118,11 @@ builder.Services.AddHealthChecksUI().AddInMemoryStorage();
 builder.Services.AddHttpClient();
 
 builder.Services.AddQuartzServices();
-builder.Services.Configure<EmailJob>(builder.Configuration.GetSection("SendGrid"));
+// builder.Services.Configure<EmailJob>(builder.Configuration.GetSection("SendGrid"));
 
 builder.Services.AddScoped<ITestTableService, TestTableService>();
 
-builder.Services.AddScoped<IEmailService, EmailService>();
+// builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddSingleton<IWeatherService, WeatherService>();
 
@@ -204,3 +208,6 @@ app.UseHealthChecks("/sql-health", new HealthCheckOptions
 app.UseHealthChecksUI();
 
 app.Run();
+
+
+
